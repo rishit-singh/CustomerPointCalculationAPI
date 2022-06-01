@@ -1,0 +1,10 @@
+using System;
+
+namespace CustomerPointerCalculationAPI
+{
+   public class PointCalculor
+   {
+      public static int GetUserPoints(); 
+   }
+}
+
