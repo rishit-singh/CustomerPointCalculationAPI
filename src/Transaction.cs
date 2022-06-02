@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 using CustomerPointCalculationAPI.Logs;
 
+using Cryptography;
+
 namespace CustomerPointCalculationAPI
 {
     public class TransactionManager
@@ -53,6 +55,39 @@ namespace CustomerPointCalculationAPI
             }
 
             return transactions.ToArray();
+        }
+
+        public static int GetTotalTransactionCount()
+        {
+            int count = 0;
+
+            try
+            {
+                count = Database.FetchQueryData("SELECT * FROM transactions;", "transaction").Length;
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return count;
+        }
+
+        public static Transaction CreateTransaction(string userID, int amount, DateTime time)
+        {
+            Transaction transaction = null;
+
+            try
+            {
+                transaction = new Transaction(userID, amount, time);
+                transaction.ID = Hashing.GetSHA256($"{userID}_{amount}_{time.ToString()}_{TransactionManager.GetTotalTransactionCount()}");
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return transaction;
         }
    }
 

@@ -1,7 +1,8 @@
 using System;
 using CustomerPointCalculationAPI;
+using CustomerPointCalculationAPI.Tests;
 
-namespace  CustomerPointCalculationAPI
+namespace CustomerPointCalculationAPI
 {
     public class Program
     {
@@ -32,7 +33,9 @@ namespace  CustomerPointCalculationAPI
 
             Database.Connect();
 
-            app.Run();
+            new TransactionCreationTest().Run();
+
+            //app.Run();
         }
     }
 }
