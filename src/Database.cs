@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+
 using Npgsql;
 using Newtonsoft.Json;
 using CustomerPointCalculationAPI.Logs;
@@ -76,16 +78,18 @@ namespace CustomerPointCalculationAPI
             if (Database.DefaultDatabaseConfig.IsEmpty())
                 Database.LoadDatabaseConfig();
 
-            try
-            {
+            // try
+            // {
                 Database.DefaultSqlConnection = new NpgsqlConnection(Database.DefaultDatabaseConfig.GetConnectionString());
-            }
-            catch (Exception e)
-            {
-                Logger.Log(e.Message, true);
 
-                return false;
-            }
+                Database.DefaultSqlConnection.Open();
+            // }
+            // catch (Exception e)
+            // {
+            //     Logger.Log(e.Message, true);
+
+            //     return false;
+            // }
 
            return true;
         }
@@ -98,26 +102,119 @@ namespace CustomerPointCalculationAPI
         {
             string configJsonString = null;
 
-            try
-            {
+            // try
+            // {
                 if ((configJsonString = FileIO.ReadFile(Database.DefaultDatabaseConfigFile)) == null)
                     throw new Exception("Failed to load DatabaseConfig, the configuration file is either empty or doesnt exist.");
 
                 Database.DefaultDatabaseConfig = JsonConvert.DeserializeObject<DatabaseConfig>(configJsonString);
-            }
-            catch (Exception e)
-            {
-                Logger.Log(e.Message, true);
+            // }
+            // catch (Exception e)
+            // {
+            //     Logger.Log(e.Message, true);
 
-                return false;
-            }
+            //     return false;
+            // }
 
             return true;
         }
 
-        public static Record[] FetchQueryData()
+        protected static Record[] GetRecordsFromReader(NpgsqlDataReader reader, string[] fields)
         {
-            return new Record[0];
+            List<Record> recordStack = new List<Record>();
+
+            Record tempRecord = new Record();
+
+            try
+            {
+                while (reader.Read())
+                {
+                    int fieldCount = reader.FieldCount;
+
+                    tempRecord = new Record(new string[fieldCount], new object[fieldCount]);
+
+                    for (int x = 0; x < fieldCount; x++)
+                    {
+                        tempRecord.Keys[x] = fields[x];
+                        tempRecord.Values[x] = (reader.GetDataTypeName(x) == "integer") ? reader.GetInt32(x).ToString() : reader.GetString(x);
+                    }
+
+                    recordStack.Add(tempRecord);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return recordStack.ToArray();
+        }
+
+        public static string[] GetTableFieldNames(string tableName)
+        {
+            List<string> fields = new List<string>();
+
+            NpgsqlCommand command = null;
+
+            NpgsqlDataReader reader = null;
+
+            try
+            {
+                Console.WriteLine($"SELECT column_name FROM INFORMATION_SCHEMA. COLUMNS WHERE TABLE_NAME = '{tableName}';");
+                command = new NpgsqlCommand($"SELECT column_name FROM INFORMATION_SCHEMA. COLUMNS WHERE TABLE_NAME = '{tableName}';", Database.DefaultSqlConnection);
+
+                reader = command.ExecuteReader();
+
+                Console.WriteLine($"Rows: {reader.Rows}");
+
+                while(reader.Read())
+                    switch (reader.GetDataTypeName(0))
+                    {
+                        case "integer":
+                            fields.Add(reader.GetInt32(0).ToString());
+                            break;
+
+                        default:
+                            fields.Add(reader.GetString(0));
+                            break;
+                    }
+
+                reader.Close();
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return fields.ToArray();
+        }
+
+        public static Record[] FetchQueryData(string query)
+        {
+            NpgsqlCommand command = null;
+
+            Record[] fetchedRecords = null;
+
+            NpgsqlDataReader reader = null;
+
+            try
+            {
+                command = new NpgsqlCommand(query, Database.DefaultSqlConnection);
+
+                string[] fields = Database.GetTableFieldNames("transactions");
+
+                reader = command.ExecuteReader();
+
+                fetchedRecords = Database.GetRecordsFromReader(reader, fields);
+
+                reader.Close();
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return fetchedRecords;
         }
     }
 }
