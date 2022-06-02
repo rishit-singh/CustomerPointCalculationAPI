@@ -24,12 +24,13 @@ namespace  CustomerPointCalculationAPI
                 app.UseSwaggerUI();
             }
 
-
             app.UseRouting();
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
             app.UseHttpsRedirection();
             app.UseAuthorization();
             app.MapControllers();
+
+            Database.Connect();
 
             app.Run();
         }
