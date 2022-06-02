@@ -31,9 +31,11 @@ namespace CustomerPointCalculationAPI.Tests
 
         public void Run()
         {
+            User[] users = UserManager.GetAllUsers();
+
             Random rand = new Random();
 
-            this.AddTestTransaction($"foobar_{rand.Next(0, 1000)}", rand.Next(10, 10000));
+            this.AddTestTransaction(users[rand.Next(0, users.Length)].ID, rand.Next(10, 10000));
         }
     }
 }

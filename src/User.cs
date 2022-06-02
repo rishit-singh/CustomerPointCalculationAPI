@@ -47,6 +47,31 @@ namespace CustomerPointCalculationAPI
 
             return true;
         }
+
+        public static User[] GetAllUsers()
+        {
+            User[] users = null;
+
+            Record[] records = null;
+
+            try
+            {
+                records = Database.FetchQueryData("SELECT * FROM users;", "users");
+
+                int size = records.Length;
+
+                users = new User[size];
+
+                for (int x = 0; x < size; x++)
+                    users[x] = new User(records[x]);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return users;
+        }
     }
 
     public class User
@@ -57,6 +82,12 @@ namespace CustomerPointCalculationAPI
 
         public User(string id, string name)
         {
+        }
+
+        public User(Record record)
+        {
+            this.ID = (string)record.Values[0];
+            this.Name = (string)record.Values[1];
         }
     }
 }
