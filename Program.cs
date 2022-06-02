@@ -32,14 +32,7 @@ namespace  CustomerPointCalculationAPI
 
             Database.Connect();
 
-            Record[] records = Database.FetchQueryData("SELECT * FROM transactions;");
-
-            int size = records.Length;
-
-            for (int x = 0; x < size; x++)
-                Console.WriteLine(records[x].Values[2]);
-
-            // app.Run();
+            app.Run();
         }
     }
 }

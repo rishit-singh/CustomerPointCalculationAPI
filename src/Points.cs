@@ -1,27 +1,131 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+
+using Newtonsoft.Json;
+
+using CustomerPointCalculationAPI.Logs;
 
 namespace CustomerPointCalculationAPI
 {
-   public class PointCalculator
-   {
-      /// <summary>
-      /// Calculates the points to be granted to the user for the provided Transaction.
-      /// </summary>
-      /// <param name="transaction"> Made transaction. </param>
-      /// <returns> Calculated points. </returns>
-      public static int GetTransactionPoints(Transaction transaction)
-      {
-          int points = 0;
+    public class UserPoints
+    {
+        public string UserID { get; set; }
 
-          if (transaction.Amount > 50)
-              points += transaction.Amount - 50;
+        public Hashtable MonthlyPoints { get; set; }
 
-          if (transaction.Amount > 100)
-              points += transaction.Amount - 100;
+        public int TotalPoints;
 
-          return points;
-      }
+        public string GetJsonString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
 
-      public static int GetTotalTransactionPoints(User user) => 0;
-   }
+        private void InitMonthyPointsHash()
+        {
+            int size = PointCalculator.Months.Length;
+
+            for (int x = 0; x < size; x++)
+                this.MonthlyPoints.Add(PointCalculator.Months[x], null);
+        }
+
+        public UserPoints(string userID)
+        {
+            this.UserID = userID;
+
+            this.InitMonthyPointsHash();
+        }
+    }
+    
+    public class PointCalculator
+    {
+        public static string[] Months = new string[] {
+            "January",
+            "Febuary",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+        };
+
+        /// <summary>
+        /// Calculates the points to be granted to the user for the provided Transaction.
+        /// </summary>
+        /// <param name="transaction"> Made transaction. </param>
+        /// <returns> Calculated points. </returns>
+        public static int GetTransactionPoints(Transaction transaction)
+        {
+            int points = 0;
+
+            if (transaction.Amount > 50)
+                points += transaction.Amount - 50;
+
+            if (transaction.Amount > 100)
+                points += transaction.Amount - 100;
+
+            return points;
+        }
+
+        public static int GetTotalTransactionPoints(User user)
+        {
+            Transaction[] transactions = null;
+
+            int totalPoints = 0;
+
+            try
+            {
+               if ((transactions = TransactionManager.GetTransactionsByUser(user)).Length == 0)
+                   throw new Exception($"User {user.ID} has made no transactions.");
+
+               int size = transactions.Length;
+
+               for (int x = 0; x < size; x++)
+                   totalPoints += PointCalculator.GetTransactionPoints(transactions[x]);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return totalPoints;
+        }
+
+        public static UserPoints GetUserPoints(User user)
+        {
+            UserPoints userPoints = null;
+
+            Transaction[] transactions = null;
+
+            try
+            {
+                if ((transactions = TransactionManager.GetTransactionsByUser(user)).Length == 0)
+                    throw new Exception($"No transactions made by User {user.ID} were found.");
+
+                userPoints = new UserPoints(user.ID);
+
+                int size = transactions.Length;
+
+                string key = null;
+
+                for (int x = 0; x < size; x++)
+                {
+                    key = PointCalculator.Months[transactions[x].TransactionDateTime.Month];
+
+                    userPoints.MonthlyPoints[key] = PointCalculator.GetTransactionPoints(transactions[x]);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return userPoints;
+        }
+    }
 }

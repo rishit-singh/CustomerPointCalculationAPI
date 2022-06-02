@@ -1,7 +1,61 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+
+using CustomerPointCalculationAPI.Logs;
 
 namespace CustomerPointCalculationAPI
 {
+    public class TransactionManager
+    {
+        /// <summary>
+        /// Pushes the provieded transaction to the database after validation.
+        /// </summary>
+        /// <param name="transcation"> Transaction instance. </param>
+        /// <returns> Execution status. </returns>
+        public static bool PushTransaction(Transaction transaction)
+        {
+            try
+            {
+                if (transaction.IsEmpty())
+                    throw new Exception("Empty Transaction object provided.");
+
+                Database.ExecuteQuery($"INSERT INTO transations VALUES('{transaction.ID}', '{transaction.UserID}', {transaction.Amount}, '{transaction.TransactionDateTime.ToString()}');");
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        public static Transaction[] GetTransactionsByUser(User user)
+        {
+            List<Transaction>  transactions = new List<Transaction>();
+
+            Record[] records = null;
+
+            try
+            {
+                records = Database.FetchQueryData("SELECT * FROM transactions WHERE UserID='{user.ID}';", "transactions");
+
+                int size = records.Length;
+
+                for (int x = 0; x < size; x++)
+                    transactions.Add(new Transaction(records[x]));
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return transactions.ToArray();
+        }
+   }
+
     public class Transaction
     {
         public string ID { get; set; }
@@ -10,10 +64,28 @@ namespace CustomerPointCalculationAPI
 
         public int Amount { get; set; }
 
-        public Transaction(string id, int amount)
+        public DateTime TransactionDateTime { get; set; }
+
+        public bool IsEmpty()
+        {
+            return (this.ID == null &&
+            this.UserID == null &&
+            this.Amount == 0);
+        }
+
+        public Transaction(string id, int amount, DateTime dateTime)
         {
             this.UserID = id;
             this.Amount = amount;
+            this.TransactionDateTime = dateTime;
+        }
+
+        public Transaction(Record record)
+        {
+            this.ID = (string)record.Values[0];
+            this.UserID = (string)record.Values[1];
+            this.Amount = (int)record.Values[2];
+            this.TransactionDateTime = Convert.ToDateTime((string)record.Values[3]);
         }
     }
 }

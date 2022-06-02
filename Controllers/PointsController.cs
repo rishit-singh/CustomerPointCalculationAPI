@@ -12,7 +12,7 @@ namespace CustomerPointCalculationAPI
         public async Task<int> GetPoints(string user, uint amount)
         {
             return await Task.Run(() => {
-                return PointCalculator.GetTransactionPoints(new Transaction(user, (int)amount));
+                return PointCalculator.GetTransactionPoints(new Transaction(user, (int)amount, new DateTime()));
             });
         }
     }

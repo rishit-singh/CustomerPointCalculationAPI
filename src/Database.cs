@@ -150,7 +150,7 @@ namespace CustomerPointCalculationAPI
             return recordStack.ToArray();
         }
 
-        public static string[] GetTableFieldNames(string tableName)
+        protected static string[] GetTableFieldNames(string tableName)
         {
             List<string> fields = new List<string>();
 
@@ -189,7 +189,55 @@ namespace CustomerPointCalculationAPI
             return fields.ToArray();
         }
 
-        public static Record[] FetchQueryData(string query)
+        public static bool ExecuteQuery(string query)
+        {
+            NpgsqlCommand command = null;
+
+            try
+            {
+                command = new NpgsqlCommand(query, Database.DefaultSqlConnection);
+
+                command.ExecuteNonQuery();
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+
+                return false;
+            }
+
+            return true;
+        }
+
+        public static int GetRecordCount(string tableName)
+        {
+            int count = 0;
+
+            NpgsqlCommand command = null;
+
+            NpgsqlDataReader reader = null;
+
+            try
+            {
+                command = new NpgsqlCommand($"SELECT * FROM {tableName}", Database.DefaultSqlConnection);
+
+                reader = command.ExecuteReader();
+
+                for (; reader.Read(); count++);
+
+                reader.Close();
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+
+                return count;
+            }
+
+            return count;
+        }
+
+        public static Record[] FetchQueryData(string query, string tableName)
         {
             NpgsqlCommand command = null;
 
@@ -201,7 +249,7 @@ namespace CustomerPointCalculationAPI
             {
                 command = new NpgsqlCommand(query, Database.DefaultSqlConnection);
 
-                string[] fields = Database.GetTableFieldNames("transactions");
+                string[] fields = Database.GetTableFieldNames(tableName);
 
                 reader = command.ExecuteReader();
 
