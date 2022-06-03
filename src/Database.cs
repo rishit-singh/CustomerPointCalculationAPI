@@ -131,8 +131,6 @@ namespace CustomerPointCalculationAPI
                 {
                     int fieldCount = reader.FieldCount;
 
-                    Console.WriteLine($"FieldCount: {fieldCount}");
-
                     tempRecord = new Record(new string[fieldCount], new object[fieldCount]);
 
                     Type fieldType = typeof(string);
@@ -168,7 +166,6 @@ namespace CustomerPointCalculationAPI
 
             try
             {
-                Console.WriteLine($"SELECT column_name FROM INFORMATION_SCHEMA. COLUMNS WHERE TABLE_NAME = '{tableName}';");
                 command = new NpgsqlCommand($"SELECT column_name FROM INFORMATION_SCHEMA. COLUMNS WHERE TABLE_NAME = '{tableName}';", Database.DefaultSqlConnection);
 
                 reader = command.ExecuteReader();

@@ -133,8 +133,6 @@ namespace CustomerPointCalculationAPI
                 {
                     key = PointCalculator.Months[transactions[x].TransactionDateTime.Month];
 
-                    Console.WriteLine(key);
-
                     userPoints.MonthlyPoints[key] = PointCalculator.GetTransactionPoints(transactions[x]);
                 }
 

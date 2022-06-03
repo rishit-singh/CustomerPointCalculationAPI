@@ -46,8 +46,6 @@ namespace CustomerPointCalculationAPI
 
                 int size = records.Length;
 
-                Console.WriteLine($"Record Size: {size}");
-
                 for (int x = 0; x < size; x++)
                     transactions.Add(new Transaction(records[x]));
             }

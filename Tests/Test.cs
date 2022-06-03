@@ -27,8 +27,6 @@ namespace CustomerPointCalculationAPI.Tests
             else
                 day = rand.Next(1, 31);
 
-            Console.WriteLine($"Day: {day}; Month: {month}");
-
             return new DateTime(DateTime.Now.Year, month, day, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
         }
     }

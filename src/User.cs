@@ -121,6 +121,8 @@ namespace CustomerPointCalculationAPI
 
         public User(string id, string name)
         {
+            this.ID = id;
+            this.Name = name;
         }
 
         public User(Record record)
