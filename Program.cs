@@ -2,7 +2,6 @@ using System;
 using CustomerPointCalculationAPI;
 using CustomerPointCalculationAPI.Tests;
 
-
 namespace CustomerPointCalculationAPI
 {
     public class Program
