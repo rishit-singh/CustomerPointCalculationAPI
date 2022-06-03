@@ -34,9 +34,7 @@ namespace CustomerPointCalculationAPI
 
             Database.Connect();
 
-            new PointCalculationTest().Run();
-
-            // app.Run();
+            app.Run();
         }
     }
 }

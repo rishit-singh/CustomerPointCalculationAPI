@@ -1,0 +1,3 @@
+[submodule "CustomerPointCalculationClientTests"]
+	path = CustomerPointCalculationClientTests
+	url = https://github.com/rishit-singh/CustomerPointCalculationClientTests
