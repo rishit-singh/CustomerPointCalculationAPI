@@ -32,7 +32,8 @@ namespace CustomerPointCalculationAPI
             app.MapControllers();
 
             Database.Connect();
-            //app.Run();
+
+            app.Run();
         }
     }
 }

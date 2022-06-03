@@ -95,6 +95,22 @@ namespace CustomerPointCalculationAPI
 
             return user;
         }
+
+        public static bool UserExists(string userID)
+        {
+            bool exists = false;
+
+            try
+            {
+                exists = (UserManager.GetUserById(userID) == null);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return exists;
+        }
     }
 
     public class User
