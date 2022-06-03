@@ -78,18 +78,18 @@ namespace CustomerPointCalculationAPI
             if (Database.DefaultDatabaseConfig.IsEmpty())
                 Database.LoadDatabaseConfig();
 
-            // try
-            // {
+            try
+            {
                 Database.DefaultSqlConnection = new NpgsqlConnection(Database.DefaultDatabaseConfig.GetConnectionString());
 
                 Database.DefaultSqlConnection.Open();
-            // }
-            // catch (Exception e)
-            // {
-            //     Logger.Log(e.Message, true);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
 
-            //     return false;
-            // }
+                return false;
+            }
 
            return true;
         }
@@ -102,19 +102,19 @@ namespace CustomerPointCalculationAPI
         {
             string configJsonString = null;
 
-            // try
-            // {
+            try
+            {
                 if ((configJsonString = FileIO.ReadFile(Database.DefaultDatabaseConfigFile)) == null)
                     throw new Exception("Failed to load DatabaseConfig, the configuration file is either empty or doesnt exist.");
 
                 Database.DefaultDatabaseConfig = JsonConvert.DeserializeObject<DatabaseConfig>(configJsonString);
-            // }
-            // catch (Exception e)
-            // {
-            //     Logger.Log(e.Message, true);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
 
-            //     return false;
-            // }
+                return false;
+            }
 
             return true;
         }
@@ -131,12 +131,20 @@ namespace CustomerPointCalculationAPI
                 {
                     int fieldCount = reader.FieldCount;
 
+                    Console.WriteLine($"FieldCount: {fieldCount}");
+
                     tempRecord = new Record(new string[fieldCount], new object[fieldCount]);
+
+                    Type fieldType = typeof(string);
 
                     for (int x = 0; x < fieldCount; x++)
                     {
                         tempRecord.Keys[x] = fields[x];
-                        tempRecord.Values[x] = (reader.GetDataTypeName(x) == "integer") ? reader.GetInt32(x).ToString() : reader.GetString(x);
+
+                        if ((fieldType = reader.GetFieldType(x)) == typeof(int))
+                            tempRecord.Values[x] = reader.GetInt32(x);
+                        else
+                            tempRecord.Values[x] = reader.GetString(x);
                     }
 
                     recordStack.Add(tempRecord);
@@ -165,19 +173,8 @@ namespace CustomerPointCalculationAPI
 
                 reader = command.ExecuteReader();
 
-                Console.WriteLine($"Rows: {reader.Rows}");
-
                 while(reader.Read())
-                    switch (reader.GetDataTypeName(0))
-                    {
-                        case "integer":
-                            fields.Add(reader.GetInt32(0).ToString());
-                            break;
-
-                        default:
-                            fields.Add(reader.GetString(0));
-                            break;
-                    }
+                    fields.Add(reader.GetString(0));
 
                 reader.Close();
             }
@@ -245,8 +242,8 @@ namespace CustomerPointCalculationAPI
 
             NpgsqlDataReader reader = null;
 
-            try
-            {
+            // try
+            // {
                 command = new NpgsqlCommand(query, Database.DefaultSqlConnection);
 
                 string[] fields = Database.GetTableFieldNames(tableName);
@@ -256,11 +253,11 @@ namespace CustomerPointCalculationAPI
                 fetchedRecords = Database.GetRecordsFromReader(reader, fields);
 
                 reader.Close();
-            }
-            catch (Exception e)
-            {
-                Logger.Log(e.Message, true);
-            }
+            // }
+            // catch (Exception e)
+            // {
+            //     Logger.Log(e.Message, true);
+            // }
 
             return fetchedRecords;
         }

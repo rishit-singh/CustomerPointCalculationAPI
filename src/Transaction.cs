@@ -42,9 +42,11 @@ namespace CustomerPointCalculationAPI
 
             try
             {
-                records = Database.FetchQueryData("SELECT * FROM transactions WHERE UserID='{user.ID}';", "transactions");
+                records = Database.FetchQueryData($"SELECT * FROM transactions WHERE userid='{user.ID}';", "transactions");
 
                 int size = records.Length;
+
+                Console.WriteLine($"Record Size: {size}");
 
                 for (int x = 0; x < size; x++)
                     transactions.Add(new Transaction(records[x]));

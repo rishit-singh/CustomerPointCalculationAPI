@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 
 using CustomerPointCalculationAPI.Logs;
 
+using Npgsql;
+
 namespace CustomerPointCalculationAPI
 {
     public class UserPoints
@@ -25,8 +27,22 @@ namespace CustomerPointCalculationAPI
         {
             int size = PointCalculator.Months.Length;
 
+            this.MonthlyPoints = new Hashtable();
+
             for (int x = 0; x < size; x++)
-                this.MonthlyPoints.Add(PointCalculator.Months[x], null);
+                this.MonthlyPoints.Add(PointCalculator.Months[x], 0);
+        }
+
+        public int GetTotalPoints()
+        {
+            int total = 0;
+
+            ICollection values = this.MonthlyPoints.Values;
+
+            foreach (object value in values)
+                total += (int)value;
+
+            return (this.TotalPoints = total);
         }
 
         public UserPoints(string userID)
@@ -117,8 +133,12 @@ namespace CustomerPointCalculationAPI
                 {
                     key = PointCalculator.Months[transactions[x].TransactionDateTime.Month];
 
+                    Console.WriteLine(key);
+
                     userPoints.MonthlyPoints[key] = PointCalculator.GetTransactionPoints(transactions[x]);
                 }
+
+                userPoints.GetTotalPoints();
             }
             catch (Exception e)
             {

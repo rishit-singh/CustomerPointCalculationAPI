@@ -72,6 +72,29 @@ namespace CustomerPointCalculationAPI
 
             return users;
         }
+
+        public static User GetUserById(string id)
+        {
+            User user = null;
+
+            Record[] records = null;
+
+            try
+            {
+                records = Database.FetchQueryData($"SELECT * FROM users WHERE ID='{id}';", "users");
+
+                if (records.Length == 0)
+                    throw new Exception($"User with ID {id} doesnt exist.");
+
+                user = new User(records[0]);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message, true);
+            }
+
+            return user;
+        }
     }
 
     public class User

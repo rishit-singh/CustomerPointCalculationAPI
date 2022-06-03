@@ -32,9 +32,6 @@ namespace CustomerPointCalculationAPI
             app.MapControllers();
 
             Database.Connect();
-
-            new TransactionCreationTest().Run();
-
             //app.Run();
         }
     }
